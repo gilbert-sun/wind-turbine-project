@@ -63,7 +63,7 @@ python3 main.py plotmodel -i  path/to/input  -o path/to/output -f
 ```
 Note that it will also generate the model curve diagram according input folder
 
-
+```
 data/
 ├─ abnormal/
 │  ├─ abnormal_sample_01.csv
