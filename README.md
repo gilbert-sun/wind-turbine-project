@@ -21,7 +21,7 @@ python main.py <mode> [-h] [-i INPUT_DIR] [-o OUTPUT_DIR] [-t THETA] [-c THRESHO
 * `mode`: The mode of the program, with two options:
   * `evaluate`: Evaluation mode
   * `convert`: Conversion mode
-  * 'plotmodel' : plot model curve mode 
+  * `plotmodel` : plot model curve mode 
 
 
 ## Optional Parameters
