@@ -136,7 +136,8 @@ def plotmodel(args):
     for d in dirs:
         if (os.path.exists(os.path.join(args.output_dir, d)) == False):
             os.makedirs(os.path.join(args.output_dir, d))
-    df = pd.read_csv("./dataset400/pattern/2024-06-26_448p-5_Spec.csv")
-    modtype = plot_diagram(df, args.output_dir , "1")
-    plot_model(modtype, args.output_dir , "1")
+    for f in files:
+        df = pd.read_csv(os.path.join(args.input_dir, f))
+        modtype = plot_diagram(df, args.output_dir , f.split(".")[0])
+        plot_model(modtype, args.output_dir ,  f.split(".")[0])
     print(f"Conversion completed in {time() - start_time:.2f} seconds.")
