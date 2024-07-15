@@ -84,14 +84,25 @@ def plot_model(mod_dic, savdir, savname):
     global modvalue1, modvalue2
     modvalue1 = []
     modvalue2 = []
+    # 3 2 1
+    # 6 5 4
+    # 9 8 7
+    # 12 11 10
+    # 4 row * 3 column
+    # model 1 : read first peak :read 3 column :[vv * ii - 1][1][0]
     for ii in range(1, 4):
+        # read 4 row ,reverse sequence ( 3,2,1,0)
         for vv in range(3, -1, -1):
             modvalue1.append(list(mod_dic.values())[vv * ii - 1][1][0])
+    # model 2 : read sec peak :read 3 column  : [vv * ii - 1][1][1]
     for ii in range(1, 4):
+        # read 4 row ,reverse sequence ( 3,2,1,0)
         for vv in range(3, -1, -1):
             modvalue2.append(list(mod_dic.values())[vv * ii - 1][1][1])
+    # model 3 : read sec peak :read 3 column  : [vv * ii - 1][1][2]
+    #print("plot_model:inside---->1> ",type(modvalue1),modvalue1)
     modval = [modvalue1, modvalue2]
-
+    #print("plot_model:inside---->2> ",modval)
     # sort dict from old colorful2 sequence to new header2 sequence
     try:
         for id in range(12):
@@ -113,6 +124,11 @@ def plot_model(mod_dic, savdir, savname):
     plt.savefig(os.path.join(savdir, savname + "_model.png"))
     # plt.show()
     plt.close()
+
+    # save to corresponding xxx_model_x.csv file
+    df = pd.DataFrame({'Key': list(mod_dic.keys()), 'model_1':  modval[0] ,  'model_2':  modval[1]})
+    df.to_csv(os.path.join(savdir,savname+"_model.csv"))
+    #return modval
 
 def plotmodel(args):
     """Read already converted spectrum format to form/make model curve .
@@ -140,4 +156,5 @@ def plotmodel(args):
         df = pd.read_csv(os.path.join(args.input_dir, f))
         modtype = plot_diagram(df, args.output_dir , f.split(".")[0])
         plot_model(modtype, args.output_dir ,  f.split(".")[0])
+
     print(f"Conversion completed in {time() - start_time:.2f} seconds.")
