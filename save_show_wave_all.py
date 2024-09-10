@@ -14,9 +14,9 @@ def plot1(event):
     if (not os.path.exists(fd)):
         os.makedirs(fd)
     for idx in range(len(fs)):
-            png_peak = os.path.basename(fs[idx].split(".csv")[0]+"_out.png")
-            #plt.savefig(png_peak)#os.path.join(savdir, savname+ ".png"))
-            plot221_4(fl, fs, y, sr,fd+png_peak,True)
+            png_peak = os.path.basename(fs[idx].split(".wav")[0]+"_out.png")
+            y, sr = librosa.load(fs[idx])
+            plot221_4(idx, fs, y, sr,fd+png_peak,True)
 
 # To plot previous page
 def plot2(event):
@@ -51,12 +51,12 @@ def plot4(event):
     quit()
 
 
-def plot221_4(fl, fs, y, sr, fout=None,savefig = False):
+def plot221_4(idx, fs, y, sr, fout=None,savefig = False):
     # =======================================221
     plt.subplot(221)
     plt.cla()  # ax0.clear()
     sound, _ = librosa.effects.trim(y)  # trim silent edges
-    plt.title('Machine sound: ' + fs[fl].split("/")[-1])
+    plt.title('Machine sound: ' + fs[idx].split("/")[-1])
     plt.ylabel('Ampitude')
     plt.xlabel('Hz')
     plt.grid()
@@ -69,6 +69,8 @@ def plot221_4(fl, fs, y, sr, fout=None,savefig = False):
     plt.title("FFT for sound")
     plt.xlabel('Hz')
     # plt.tight_layout()
+    plt.xlim(0,5000)
+    plt.ylim(0,1)
     plt.grid()
     plt.plot(fft_signal)
     # =======================================223
@@ -96,7 +98,7 @@ def plot_4button():
     global btn1, btn2, btn3, btn4, axButn1, axButn2, axButn3, axButn4
     # Save button
     axButn1 = plt.axes([0.35, 0.02, 0.04, 0.02])
-    btn1 = Button(axButn1, label="Home", color='pink', hovercolor='lime')  # , useblit=True)
+    btn1 = Button(axButn1, label="Save", color='pink', hovercolor='lime')  # , useblit=True)
     btn1.on_clicked(plot1)
     # Previous button
     axButn2 = plt.axes([0.4, 0.02, 0.04, 0.02])
@@ -117,24 +119,17 @@ if __name__ == '__main__':
     global fs,fl
     rows = 2
     cols = 2
+    
     # Generate indices for the grid
     plt.figure(figsize=(18, 9))
-    #fig, axs = plt.subplots(rows,cols,figsize=(18, 9), constrained_layout=True)
-    #plt.subplots_adjust( bottom=0.05) #subplots_adjust(wspace=1, hspace=0.5)
-    # /home/k900/Documents/wind-turbine-project/0db/bwind/id_00/abnormal/2023-08-25-63db.wav
-    filepath = filedialog.askopenfilename(filetypes=[("all files", "*.*")])
-    fd = os.path.dirname(os.path.abspath(filepath))#filedialog.askdirectory()
-    fs = glob.glob(fd+"/*.wav")
+    fd = filedialog.askdirectory()
+    fs = glob.glob(fd+"/**/*.wav", recursive=True)
     fs.sort()
-    fidx = []
-    #find selected file-id in filelist return file index
-    [fidx.append(id) if (fs[id] == filepath) else 0 for id in range(len(fs))]
-    fl = fidx[0]
-
+    fl = 0 
+    filepath = fs[0]
+    
     #print("-----fidx ---> " , fl  ,"========> ",filepath )#,"========> ",filepath.split(".")[0].split('/'))
     y, sr = librosa.load(filepath)  # sr 為採樣頻率
-
-
     plot221_4(fl, fs, y, sr)
     plot_4button()
     plt.show()
