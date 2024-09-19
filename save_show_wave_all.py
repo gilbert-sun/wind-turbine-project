@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import numpy as np
 import librosa.display
+import matplotlib.patches as mpatches
 matplotlib.use("TkAgg")
 
 # Save button
 def plot1(event):
-    global fs,fl
-    fd = os.path.dirname(os.path.abspath(filepath))+"/outdir/"
+    global fs,fl,fdd
+    fd = fdd+"/outdir/" #os.path.dirname(os.path.abspath(filepath))+"/outdir/"
     if (not os.path.exists(fd)):
         os.makedirs(fd)
     for idx in range(len(fs)):
@@ -59,37 +60,66 @@ def plot221_4(idx, fs, y, sr, fout=None,savefig = False):
     plt.title('Machine sound: ' + fs[idx].split("/")[-1])
     plt.ylabel('Ampitude')
     plt.xlabel('Hz')
+    plt.xlim(0,10)
     plt.grid()
     librosa.display.waveshow(y=sound, sr=sr)  # .waveplot(sound, sr=sr)
     # =======================================222
     ax1 = plt.subplot(222)
     plt.cla()  # ax1.clear()
-    n_fft = 32800
+    n_fft = 40960
     fft_signal = np.abs(librosa.stft(sound[:n_fft], n_fft=n_fft, hop_length=n_fft + 1))
     plt.title("FFT for sound")
     plt.xlabel('Hz')
     # plt.tight_layout()
-    plt.xlim(0,5000)
+    #plt.xlim(0,5000)
+    plt.gca().set_xlim(0,1000)
     plt.ylim(0,1)
     plt.grid()
     plt.plot(fft_signal)
-    # =======================================223
+    # =======================================2
+    # 偵測節拍
+    tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+    print(tempo,  " <<: :>> " ,beat_frames)
+    # 將 frames 轉為實際時間
+    beat_times = librosa.frames_to_time(beat_frames, sr=sr)
+
+    # 節拍的時間點
+    print(len(beat_times), " <<===>> " , beat_times)
+    print("\n--------------------------------------------------")
     plt.subplot(223)
-    plt.cla()
-    mel_spect = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=1024, hop_length=512, n_mels=64, power=2.0)
-    img = librosa.display.specshow(librosa.power_to_db(mel_spect), sr=sr, x_axis='time', y_axis='mel', fmax=16400)
+
+    plt.cla() #n_fft = 1024 , hop_length = 512/ 320
+    mel_spect = librosa.feature.melspectrogram(y=y, sr=sr,n_fft=40960, hop_length=512, n_mels=128, power=2.0)#,
+    img = librosa.display.specshow(librosa.power_to_db(mel_spect, ref=np.max), x_axis='time', y_axis='mel', fmax=16400)#,cmap ="Greys")
+    #img = librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), sr=sr, y_axis='mel', x_axis='time', fmax=16400)#, ax=ax)
     plt.title('Mel spectrogram')
     plt.xlabel('Time [s]')
     plt.ylabel('Freq [Hz]')
-    # plt.colorbar(img, format='%+2.0f dB')
+    plt.xlim(0,10)
+
     # =======================================224
     plt.subplot(224)
-    plt.cla()
-    plt.title('Spectrogram')
+    plt.cla() #n_fft = 1024 , hop_length = 512/ 320
+    mel_spect = librosa.feature.melspectrogram(y=y, sr=sr,n_fft=40960, hop_length=512, n_mels=128, power=2.0)#,
+    img = librosa.display.specshow(librosa.power_to_db(mel_spect, ref=np.max), x_axis='time', y_axis='mel', fmax=16400)#,cmap ="Greys")
+    #img = librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), sr=sr, y_axis='mel', x_axis='time', fmax=16400)#, ax=ax)
+    plt.title('Mel spectrogram')
     plt.xlabel('Time [s]')
-    Pxx, freqs, times, cax = plt.specgram(y, Fs=sr,mode='magnitude', scale='dB')
-    #plt.gca().set_ylim(0,16384)
-    #plt.colorbar( cax, format='%+2.0f dB')
+    plt.ylabel('Freq [Hz]')
+    plt.xlim(0,10)
+    #plt.gca().set_xlim(0,10) (beat_times[0]+0.5
+    rect = mpatches.Rectangle((beat_times[0] ,500),4.5,2048, color= "cyan",linewidth=3, alpha = 0.2)
+    plt.text(beat_times[3], 2448, 'one_cycle ',color="cyan")
+    plt.gca().add_patch(rect)
+    rect1 = mpatches.Rectangle((beat_times[int(len(beat_times)/2)],500),4.5,2048, color= "lime",linewidth=3, alpha = 0.2)
+    plt.text(beat_times[int(len(beat_times)/2)+3], 2448, 'two_cycle',color="lime")
+    plt.gca().add_patch(rect1)
+    plt.scatter(beat_times, [ 1000 for _ in beat_times], color="pink", s=30)
+    vv = [beat_times[i] if  i % 3==1 else ""  for i in range(len(beat_times))]
+    for id, idx in enumerate(vv):
+        #if not id == 0:
+            plt.axvline(x = idx, color="violet", linestyle="-.")
+
     if savefig:
         plt.savefig(fout)  # os.path.join(savdir, savname+ ".png"))
 
@@ -116,19 +146,18 @@ def plot_4button():
 
 if __name__ == '__main__':
     global btn1, btn2, btn3, btn4, axButn1, axButn2, axButn3, axButn4
-    global fs,fl
+    global fs,fl,fdd
     rows = 2
     cols = 2
-    
+
     # Generate indices for the grid
     plt.figure(figsize=(18, 9))
-    fd = filedialog.askdirectory()
-    fs = glob.glob(fd+"/**/*.wav", recursive=True)
+    fdd = filedialog.askdirectory()
+    fs = glob.glob(fdd+"/**/*.wav", recursive=True)
     fs.sort()
-    fl = 0 
+    fl = 0
     filepath = fs[0]
-    
-    #print("-----fidx ---> " , fl  ,"========> ",filepath )#,"========> ",filepath.split(".")[0].split('/'))
+
     y, sr = librosa.load(filepath)  # sr 為採樣頻率
     plot221_4(fl, fs, y, sr)
     plot_4button()
